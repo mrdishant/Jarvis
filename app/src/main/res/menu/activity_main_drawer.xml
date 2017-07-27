@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+
+            android:title="Home" />
+        <item
+            android:id="@+id/location"
+
+            android:title="Location" />
+        <item
+            android:id="@+id/distance"
+
+            android:title="Distance" />
+
+    </group>
+
+    <item android:title="Entertainment">
+        <menu>
+            <item
+                android:id="@+id/music"
+
+                android:title="Music" />
+            <item
+                android:id="@+id/social"
+
+                android:title="Social" />
+        </menu>
+    </item>
+
+</menu>
