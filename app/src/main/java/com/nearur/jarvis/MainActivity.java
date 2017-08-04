@@ -669,7 +669,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         if(cr>0){
-            speak("Okay "+name+" I'll "+s);
+            speak("Okay  "+name+" I'll "+s);
         }
         else{
             speak("I guess you haven't told me "+s.substring(s.indexOf("forget")+7));
