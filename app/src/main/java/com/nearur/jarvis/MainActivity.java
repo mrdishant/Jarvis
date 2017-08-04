@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -44,6 +45,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -193,7 +195,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            speak("");
         }
 
         return super.onOptionsItemSelected(item);
@@ -209,7 +211,7 @@ public class MainActivity extends AppCompatActivity
             i=new Intent(this,MainActivity.class);
             finish();
         } else if (id == R.id.music) {
-            i=new Intent(this,MainActivity.class);
+            i=new Intent(this,Contacts.class);
         } else if (id == R.id.distance) {
             i=new Intent(this,A2.class);
         } else if (id == R.id.location) {
@@ -268,16 +270,29 @@ public class MainActivity extends AppCompatActivity
             if (a.containsKey(se.toLowerCase())) {
                 speak(a.get(se));
         }
-                  else if (se.contains("dad")&&se.contains("call")) {
+                  else if (se.contains("call")) {
+                  String namep = se.toLowerCase().substring(se.toLowerCase().indexOf("call")+5).trim();
+                  boolean found =false;
+                  ContentResolver resolver = getContentResolver();
+                  Uri uri= ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+                  Cursor c=resolver.query(uri,null,null,null,null);
+                  while (c.moveToNext()) {
+                      if ((c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))).toLowerCase().contains(namep)) {
+                          String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                          Intent i = new Intent(Intent.ACTION_CALL);
+                          i.setData(Uri.parse("tel:"+phone));
+                          if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                              Toast.makeText(this, "Please Give Permission", Toast.LENGTH_SHORT).show();
+                          }
+                          speak("Okay " + name);
+                          found=true;
+                          startActivity(i);
+                      }
+                  }
+                  if(!found){
+                      speak("No Contact Found Can U please Specify");
+                  }
 
-                String phone = "+919023074222";
-                Intent i = new Intent(Intent.ACTION_CALL);
-                i.setData(Uri.parse("tel:" + phone));
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this,"Please Give Permission",Toast.LENGTH_SHORT).show();
-                }
-                speak("Okay "+name);
-                startActivity(i);
             }
 
 
@@ -443,12 +458,38 @@ public class MainActivity extends AppCompatActivity
                         "And I spend it on girls and shoes.");
 
             }
-            else if(se.toLowerCase().contains("sms")&&se.toLowerCase().contains("dad")){
-                String num="+919888103013";
-                Intent i=new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("sms:"+num));
-                i.putExtra("sms_body",se.substring(se.indexOf("dad")+4,se.length()));
-                startActivity(i);
+            else if(se.toLowerCase().contains("sms")){
+                String namep = se.toLowerCase().substring(se.toLowerCase().indexOf("sms")+4,se.toLowerCase().indexOf("that")).trim();
+                boolean found =false;
+                ContentResolver resolver = getContentResolver();
+                Uri uri= ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+                Cursor c=resolver.query(uri,null,null,null,null);
+                while (c.moveToNext()) {
+                    if ((c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))).toLowerCase().contains(namep)) {
+                        String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        Intent i=new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse("sms:"+phone));
+                        i.putExtra("sms_body",se.substring(se.indexOf("that")+4,se.length()));
+                        speak("Okay " + name);
+                        found=true;
+                        startActivity(i);
+                        break;
+                    }
+                    if ((c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_ALTERNATIVE))).toLowerCase().contains(namep)) {
+                        String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        Intent i=new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse("sms:"+phone));
+                        i.putExtra("sms_body",se.substring(se.indexOf("that")+4,se.length()));
+                        speak("Okay " + name);
+                        found=true;
+                        startActivity(i);
+                        break;
+                    }
+                }
+                if(!found){
+                    speak("No Contact Found Can U please Specify");
+                }
+
             }
 
             else if(se.toLowerCase().contains("where is")){
@@ -462,23 +503,64 @@ public class MainActivity extends AppCompatActivity
             }
 
             else if(se.toLowerCase().contains("alarm")){
-                if(se.toLowerCase().contains("minutes")){
-                    int s=Integer.parseInt(se.substring(se.toLowerCase().indexOf("for")+3,se.toLowerCase().indexOf("minutes")).trim())*60;
-                    alarm(s);
+                if(se.toLowerCase().contains("minutes")||se.toLowerCase().contains("minute")){
+                    int s=Integer.parseInt(se.substring(se.toLowerCase().indexOf("for")+3,se.toLowerCase().indexOf("minu")).trim());
+                    Calendar c=Calendar.getInstance();
+                    if(c.get(Calendar.MINUTE)+s<60){
+                        c.set(Calendar.MINUTE,s+c.get(Calendar.MINUTE));
+                        c.set(Calendar.SECOND,00);
+                    }else{
+                        c.set(Calendar.HOUR_OF_DAY,c.get(Calendar.HOUR_OF_DAY)+1);
+                        c.set(Calendar.MINUTE,s-(60-c.get(Calendar.MINUTE)));
+                        c.set(Calendar.SECOND,00);
+                    }
+                    Intent intent=new Intent(this,AlramRing.class);
+                    PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),101,intent,0);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),pendingIntent);
+                    Toast.makeText(getApplicationContext(), "Alarm set for "+s+" minutes from now", Toast.LENGTH_SHORT).show();
                 }
 
-                else if(se.toLowerCase().contains("clock")){
-                    int s=Integer.parseInt(se.substring(se.indexOf("for")+3,se.indexOf("oclock")).trim())*60;
-                    alarm(s);
-                }
                 else{
+                    speak("Sorry Can U please Enter?");
                     Calendar c=Calendar.getInstance();
-                    int hh=c.get(Calendar.HOUR);
+                    int hh=c.get(Calendar.HOUR_OF_DAY);
                     int mm=c.get(Calendar.MINUTE);
                     TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                            alarm(i*60+i1);
+                            Calendar c1=Calendar.getInstance();
+                            int h=c1.get(Calendar.HOUR_OF_DAY);
+                            int m=c1.get(Calendar.MINUTE);
+                            if(i<h){
+                                c1.set(Calendar.DATE,c1.get(Calendar.DATE)+1);
+                                c1.set(Calendar.HOUR_OF_DAY, i);
+                                c1.set(Calendar.MINUTE, i1);
+                                c1.set(Calendar.SECOND, 00);
+                                i=i+(23-h);
+                                if(i1>=m){
+                                    i1=m-i1;
+                                }
+                                else{
+                                    i=i-1;
+                                    i1=m-(i1-m);
+                                }
+                            }else {
+                                c1.set(Calendar.HOUR_OF_DAY, i);
+                                c1.set(Calendar.MINUTE, i1);
+                                c1.set(Calendar.SECOND, 00);
+                                i=i-h;
+                                if(i1>=m){
+                                    i1=m-i1;
+                                }
+                                else{
+                                    i=i-1;
+                                    i1=m-(i1-m);
+                                }
+                            }
+                            Intent intent=new Intent(MainActivity.this,AlramRing.class);
+                            PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),101,intent,0);
+                            alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
+                            Toast.makeText(getApplicationContext(), "Alarm set for "+i+" Hours and "+i1+" minutes from now", Toast.LENGTH_SHORT).show();
                         }
                     };
 
@@ -645,14 +727,4 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    public  void alarm(int milli){
-        Calendar c=Calendar.getInstance();
-        c.setTimeInMillis(System.currentTimeMillis());
-        c.add(Calendar.SECOND,milli);
-        Intent intent=new Intent(this,Alarm.class);
-        PendingIntent pendingIntent=PendingIntent.getBroadcast(this,101,intent,0);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+(milli*1000),pendingIntent);
-        Toast.makeText(getApplicationContext(), "Alarm set for "+milli/60+" minutes from now", Toast.LENGTH_SHORT).show();
-    }
 }

@@ -1,16 +1,12 @@
 package com.nearur.jarvis;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
-import android.os.BatteryManager;
-import android.speech.tts.TextToSpeech;
-import android.support.v4.app.NotificationCompat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
 public class Ai extends BroadcastReceiver {
@@ -55,17 +51,32 @@ public class Ai extends BroadcastReceiver {
         }
 
         if(ac.equals("android.provider.Telephony.SMS_RECEIVED")){
-            i.putExtra("message","You have a new Text Message");
+            StringBuffer string=new StringBuffer();
+            Toast.makeText(context,string.toString(),Toast.LENGTH_LONG).show();
+
+            i.putExtra("message","You have a new Text Message ");
         }
 
         if(ac.equals("android.intent.action.PHONE_STATE")){
-            i.putExtra("message","You have an Incoming Call");
+            String state=intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+            if(state.equals(TelephonyManager.EXTRA_STATE_RINGING)){
+                String  n=intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                i.putExtra("message","You have an Incoming Call from: "+n);
+            }
         }
 
         if(ac.equals("android.intent.action.BOOT_COMPLETED")){
             i.putExtra("message","All systems ready to Gear Up");
         }
 
+        if(ac.equals("android.intent.conn.CONNECTIVITY_CHANGE")){
+            ConnectivityManager connectivityManager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo wifi=connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobile=connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if(wifi.isConnected()||mobile.isConnected()){
+                i.putExtra("message","Internet Connected");
+            }
+        }
 
         context.startService(i);
     }

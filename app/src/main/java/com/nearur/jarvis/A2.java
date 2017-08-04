@@ -6,18 +6,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckedTextView;
@@ -25,11 +23,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 public class A2 extends AppCompatActivity implements View.OnClickListener {
 
@@ -82,7 +76,7 @@ public class A2 extends AppCompatActivity implements View.OnClickListener {
                             NotificationCompat.Builder builder=new NotificationCompat.Builder(A2.this);
                             builder.setContentTitle("Speed Limit");
                             builder.setContentText(location.getSpeed()+"");
-                            builder.setSmallIcon(R.drawable.j5);
+                            builder.setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.j5));
                             builder.setDefaults(Notification.DEFAULT_ALL);
                             Notification n=builder.build();
                             ncmanager.notify(count++,n);

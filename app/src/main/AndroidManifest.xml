@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -47,6 +49,8 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.PHONE_STATE" />
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+                <action android:name="android.intent.action.TIME_TICK" />
+                <action android:name="android.intent.conn.CONNECTIVITY_CHANGE"/>
                 <action android:name="a.b.c.d" />
             </intent-filter>
         </receiver>
@@ -73,7 +77,10 @@
         <receiver
             android:name=".Alarm"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true" />
+
+        <activity android:name=".Contacts" />
+        <activity android:name=".AlramRing"></activity>
     </application>
 
 </manifest>
