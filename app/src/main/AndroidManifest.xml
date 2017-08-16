@@ -79,7 +79,11 @@
         <receiver
             android:name=".Alarm"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="reminder"/>
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".Contacts" />
         <activity android:name=".AlramRing"></activity>

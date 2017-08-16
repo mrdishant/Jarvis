@@ -1,6 +1,7 @@
 package com.nearur.jarvis;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -476,7 +477,7 @@ public class MainActivity extends AppCompatActivity
 
 
     class task extends AsyncTask<Bundle,Integer,Void>{
-        String se;
+        String se,reminder;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -621,25 +622,25 @@ public class MainActivity extends AppCompatActivity
                     int a=Integer.parseInt(se.substring(0,se.indexOf('+')).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf('+')+1,se.length()).trim());
                     String ans= String.valueOf(a+b);
-                    speak("The answer is"+ans);
+                    speak("The answer is "+ans);
                 }
                 else if(se.contains("-")){
                     int a=Integer.parseInt(se.substring(0,se.indexOf('-')).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf('-')+1,se.length()).trim());
                     int ans=a-b;
-                    speak("The answer is"+ans);
+                    speak("The answer is "+ans);
                 }
                 else if(se.contains("into")){
                     int a=Integer.parseInt(se.substring(0,se.indexOf("into")).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf("into")+5,se.length()).trim());
                     String ans= String.valueOf(a*b);
-                    speak("The answer is"+ans);
+                    speak("The answer is "+ans);
                 }
                 else if(se.contains("/")){
                     int a=Integer.parseInt(se.substring(0,se.indexOf("/")).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf("/")+1,se.length()).trim());
                     String ans= String.valueOf(a/b);
-                    speak("The answer is"+ans);
+                    speak("The answer is "+ans);
                 }
 
                 else if(se.toLowerCase().contains("sing")&&se.toLowerCase().contains("song")){
@@ -702,10 +703,10 @@ public class MainActivity extends AppCompatActivity
                             c.set(Calendar.SECOND,00);
                         }
                         Intent intent=new Intent(MainActivity.this,AlramRing.class);
+                        intent.putExtra("message","Wake Up "+name);
                         PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                         alarmManager.set(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),pendingIntent);
                         speak( "Alarm set for "+s+" minutes from now");
-                        Toast.makeText(MainActivity.this, "Alarm set for "+s+" minutes from now", Toast.LENGTH_SHORT).show();
                     }
 
                     else{
@@ -746,6 +747,7 @@ public class MainActivity extends AppCompatActivity
                                     }
                                 }
                                 Intent intent=new Intent(MainActivity.this,AlramRing.class);
+                                intent.putExtra("message","Wake Up "+name);
                                 PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                                 alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
                                 Toast.makeText(getApplicationContext(), "Alarm set for "+i+" Hours and "+i1+" minutes from now", Toast.LENGTH_SHORT).show();
@@ -759,42 +761,9 @@ public class MainActivity extends AppCompatActivity
                 }
                 else if(se.toLowerCase().contains("remind me to")){
 
-                    String reminder=se.substring(se.toLowerCase().indexOf("to")+2);
+                    reminder=se.substring(se.toLowerCase().indexOf("to")+2);
                     speak("When Do u want me to remind you ?");
-                    AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Please Select");
-                    String [] strings={"EveryDay","Specific Days"};
-                    builder.setItems(strings, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            switch (i){
-                                case 0:
-                                    speak("What Time ?");
-                                    Calendar c=Calendar.getInstance();
-                                    int h=c.get(Calendar.HOUR_OF_DAY);
-                                    int m=c.get(Calendar.MINUTE);
-                                    TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
-                                        @Override
-                                        public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                            Intent intent=new Intent("remind");
-                                            intent.putExtra("hour",i);
-                                            intent.putExtra("minute",i1);
-                                            sendBroadcast(intent);
-                                        }
-                                    };
-                                    TimePickerDialog timePickerDialog=new TimePickerDialog(MainActivity.this,t,h,m,false);
-                                    timePickerDialog.show();
-                                    break;
-                                case 1:
-                                    Dialog d=new Dialog(MainActivity.this);
-                                    d.setContentView(R.layout.specifiv);
-                                    Button b=(Button)d.findViewById(R.id.button2);
-                                    d.show();
-                                    break;
-                            }
-                        }
-                    });
-                    builder.create().show();
+                    publishProgress(10);
                 }
                 else if(se.toLowerCase().contains("open")){
                     String app=se.substring(se.toLowerCase().indexOf("open")+4);
@@ -820,6 +789,49 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(MainActivity.this,e.toString(),Toast.LENGTH_LONG).show();
         }
             return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            if(values[0]==10){
+                AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Please Select");
+                String [] strings={"EveryDay","Specific Days"};
+                builder.setItems(strings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch (i){
+                            case 0:
+                                speak("At What Time ?");
+                                Calendar c=Calendar.getInstance();
+                                int h=c.get(Calendar.HOUR_OF_DAY);
+                                int m=c.get(Calendar.MINUTE);
+                                TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                        Intent intent=new Intent("remind");
+                                        intent.putExtra("hour",i);
+                                        intent.putExtra("minute",i1);
+                                        intent.putExtra("message",name+" it's time to "+reminder);
+                                        sendBroadcast(intent);
+                                        speak("Okay "+name+" i will remind you");
+                                    }
+                                };
+                                TimePickerDialog timePickerDialog=new TimePickerDialog(MainActivity.this,t,h,m,false);
+                                timePickerDialog.show();
+                                break;
+                            case 1:
+                                Dialog d=new Dialog(MainActivity.this);
+                                d.setContentView(R.layout.specifiv);
+                                Button b=(Button)d.findViewById(R.id.button2);
+                                d.show();
+                                break;
+                        }
+                    }
+                });
+                builder.create().show();
+            }
         }
 
         @Override

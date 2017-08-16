@@ -81,7 +81,7 @@ public class Ai extends BroadcastReceiver {
             }
         }
 
-        if(ac.equals("remind")){
+        if(ac.equals("remind")||ac.equals("android.intent.action.BOOT_COMPLETED")){
             int h=intent.getIntExtra("hour",0);
             int m=intent.getIntExtra("minute",0);
             Calendar c=Calendar.getInstance();
@@ -90,7 +90,9 @@ public class Ai extends BroadcastReceiver {
             c.set(Calendar.SECOND,00);
             AlarmManager alarmManager=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
             Intent x=new Intent(context,AlramRing.class);
+            x.putExtra("message",intent.getStringExtra("message"));
             PendingIntent pendingIntent=PendingIntent.getActivity(context,1023,x,0);
+            Toast.makeText(context,"Okay I will Remind you",Toast.LENGTH_LONG).show();
             alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
         }
 
