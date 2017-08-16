@@ -1,7 +1,6 @@
 package com.nearur.jarvis;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -711,51 +710,7 @@ public class MainActivity extends AppCompatActivity
 
                     else{
                         speak("Sorry Can U please Enter?");
-                        Calendar c=Calendar.getInstance();
-                        int hh=c.get(Calendar.HOUR_OF_DAY);
-                        int mm=c.get(Calendar.MINUTE);
-                        TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                                Calendar c1=Calendar.getInstance();
-                                int h=c1.get(Calendar.HOUR_OF_DAY);
-                                int m=c1.get(Calendar.MINUTE);
-                                if(i<h){
-                                    c1.set(Calendar.DATE,c1.get(Calendar.DATE)+1);
-                                    c1.set(Calendar.HOUR_OF_DAY, i);
-                                    c1.set(Calendar.MINUTE, i1);
-                                    c1.set(Calendar.SECOND, 00);
-                                    i=i+(23-h);
-                                    if(i1>=m){
-                                        i1=m-i1;
-                                    }
-                                    else{
-                                        i=i-1;
-                                        i1=m-(i1-m);
-                                    }
-                                }else {
-                                    c1.set(Calendar.HOUR_OF_DAY, i);
-                                    c1.set(Calendar.MINUTE, i1);
-                                    c1.set(Calendar.SECOND, 00);
-                                    i=i-h;
-                                    if(i1>=m){
-                                        i1=m-i1;
-                                    }
-                                    else{
-                                        i=i-1;
-                                        i1=m-(i1-m);
-                                    }
-                                }
-                                Intent intent=new Intent(MainActivity.this,AlramRing.class);
-                                intent.putExtra("message","Wake Up "+name);
-                                PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
-                                alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
-                                Toast.makeText(getApplicationContext(), "Alarm set for "+i+" Hours and "+i1+" minutes from now", Toast.LENGTH_SHORT).show();
-                            }
-                        };
-
-                        timePickerDialog = new TimePickerDialog(MainActivity.this,t,hh,mm,true);
-                        timePickerDialog.show();
+                        publishProgress(15);
                     }
 
                 }
@@ -831,6 +786,52 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
                 builder.create().show();
+            }else if(values[0]==15){
+                Calendar c=Calendar.getInstance();
+                int hh=c.get(Calendar.HOUR_OF_DAY);
+                int mm=c.get(Calendar.MINUTE);
+                TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                        Calendar c1=Calendar.getInstance();
+                        int h=c1.get(Calendar.HOUR_OF_DAY);
+                        int m=c1.get(Calendar.MINUTE);
+                        if(i<h){
+                            c1.set(Calendar.DATE,c1.get(Calendar.DATE)+1);
+                            c1.set(Calendar.HOUR_OF_DAY, i);
+                            c1.set(Calendar.MINUTE, i1);
+                            c1.set(Calendar.SECOND, 00);
+                            i=i+(23-h);
+                            if(i1>=m){
+                                i1=m-i1;
+                            }
+                            else{
+                                i=i-1;
+                                i1=m-(i1-m);
+                            }
+                        }else {
+                            c1.set(Calendar.HOUR_OF_DAY, i);
+                            c1.set(Calendar.MINUTE, i1);
+                            c1.set(Calendar.SECOND, 00);
+                            i=i-h;
+                            if(i1>=m){
+                                i1=m-i1;
+                            }
+                            else{
+                                i=i-1;
+                                i1=m-(i1-m);
+                            }
+                        }
+                        Intent intent=new Intent(MainActivity.this,AlramRing.class);
+                        intent.putExtra("message","Wake Up "+name);
+                        PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
+                        alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
+                        speak("Alarm set for "+i+" Hours and "+i1+" minutes from now");
+                    }
+                };
+
+                timePickerDialog = new TimePickerDialog(MainActivity.this,t,hh,mm,true);
+                timePickerDialog.show();
             }
         }
 
