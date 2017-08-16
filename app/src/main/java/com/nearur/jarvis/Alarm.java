@@ -10,7 +10,7 @@ public class Alarm extends BroadcastReceiver {
     MediaPlayer mp;
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "Alarm set for  minutes from now", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Alarm set for minutes from now", Toast.LENGTH_SHORT).show();
         mp=MediaPlayer.create(context,R.raw.jarvis_at_service);
         mp.start();
     }

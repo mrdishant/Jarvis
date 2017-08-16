@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.IntDef;
+import android.widget.Toast;
 
 public class JarvisService extends Service {
     public JarvisService() {
@@ -25,7 +26,12 @@ public class JarvisService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        speak(intent.getStringExtra("message"));
+        try {
+            speak(intent.getStringExtra("message"));
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(),"Error : "+e.getMessage(),Toast.LENGTH_LONG).show();
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 

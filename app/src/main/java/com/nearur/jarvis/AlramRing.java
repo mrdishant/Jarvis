@@ -15,7 +15,7 @@ public class AlramRing extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alram_ring);
-        mediaPlayer=MediaPlayer.create(this,R.raw.jarvis_at_service);
+        mediaPlayer=MediaPlayer.create(this,R.raw.alarm);
         mediaPlayer.start();
         //mediaPlayer.setLooping(true);
         stop=(Button)findViewById(R.id.buttonStop);

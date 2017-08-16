@@ -10,6 +10,7 @@ import android.app.SearchManager;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -23,8 +24,10 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Looper;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -35,6 +38,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -46,6 +50,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     String name="";
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
-    ArrayList<String > poem=new ArrayList<>();
+    ArrayList<String > poem=new ArrayList<>(),greet=new ArrayList<>();
     ContentResolver resolver;
     int scorej=0,scoreu=0;
 
@@ -106,13 +111,17 @@ public class MainActivity extends AppCompatActivity
                 mp.start();
             }
         });
-        ts.setPitch(0);
-
-        a.put("hi", "Hello "+name);
         a.put("shutdown", "Okay "+name);
         a.put("who is your father", "Mr Tony Stark");
         a.put("who are you","I am Jarvis, Personal Assistant of Mr Dishant Mahajan");
-        a.put("what is Jarvis","It stands for Just A Rather Very Intelligent System");
+        a.put("what this means","It stands for Just A Rather Very Intelligent System");
+
+        greet.add("Hi ");
+        greet.add("Hello ");
+        greet.add("Hey ");
+        greet.add("Namaste ");
+        greet.add("Sat Shri Akal ");
+        greet.add("Jai Shri Krishna ");
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -255,7 +264,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onError(int i) {
-
+            speak("");
+        speechRecognizer.stopListening();
     }
 
     @Override
@@ -265,7 +275,7 @@ public class MainActivity extends AppCompatActivity
 
         ArrayList<String> re = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         if (re != null  && re.size()>0) {
-            String se = re.get(0);
+            final String se = re.get(0);
             t.setText(se.toUpperCase());
             if (a.containsKey(se.toLowerCase())) {
                 speak(a.get(se));
@@ -315,7 +325,12 @@ public class MainActivity extends AppCompatActivity
 
             else if(se.contains("poem")){
                 Collections.shuffle(poem);
-                speak(poem.get(0));
+                if(poem.get(0).contains("Teri Aankhon Ki, Namkeen Mastiyaan")){
+                    mp=MediaPlayer.create(MainActivity.this,R.raw.poem);
+                    mp.start();
+                }else{
+                    speak(poem.get(0));
+                }
             }
 
             else if(se.equalsIgnoreCase("English Alphabets")){
@@ -352,8 +367,7 @@ public class MainActivity extends AppCompatActivity
                                 }
                                 buffer.append("\n");
                         speak(name+" Your Location is "+buffer.toString());
-                       // locationManager.removeUpdates(this);
-                        }
+                    }
 
                     @Override
                     public void onStatusChanged(String s, int i, Bundle bundle) {
@@ -411,13 +425,17 @@ public class MainActivity extends AppCompatActivity
                 }
                 speak(f);
             }
+            else if(se.toLowerCase().contains("sat sri akal")||se.toLowerCase().contains("hi")||se.toLowerCase().contains("namaste")||se.toLowerCase().contains("hello")||se.toLowerCase().contains("hey")||se.toLowerCase().contains("jai shri krishna")){
+                Collections.shuffle(greet);
+                speak(greet.get(0)+name);
+            }
            else if(se.contains("date")){
-                Date d=new Date();
+                Calendar c=Calendar.getInstance();
                 SimpleDateFormat frmt=new SimpleDateFormat("dd/MM/yyyy");
-                speak(frmt.format(d.getTime()).toString());
+                speak(frmt.format(c.getTime()).toString());
             }
             else if(se.contains("time")) {
-                Date d = new Date();
+                Calendar d =Calendar.getInstance();
                 SimpleDateFormat frmt = new SimpleDateFormat("hh:mm:ss a");
                 speak(frmt.format(d.getTime()).toString());
             }
@@ -447,16 +465,8 @@ public class MainActivity extends AppCompatActivity
             }
 
             else if(se.toLowerCase().contains("sing")&&se.toLowerCase().contains("song")){
-
-                speak("I took a pill in Ibiza\n" +
-                        "To show Avicii I was cool\n" +
-                        "And when I finally got sober, felt ten years older\n" +
-                        "But fuck it, it was something to do\n" +
-                        "I'm living out in LA\n" +
-                        "I drive a sports car just to prove\n" +
-                        "I'm a real big baller 'cause I made a million dollars\n" +
-                        "And I spend it on girls and shoes.");
-
+                mp=MediaPlayer.create(MainActivity.this,R.raw.poem);
+                mp.start();
             }
             else if(se.toLowerCase().contains("sms")){
                 String namep = se.toLowerCase().substring(se.toLowerCase().indexOf("sms")+4,se.toLowerCase().indexOf("that")).trim();
@@ -515,7 +525,7 @@ public class MainActivity extends AppCompatActivity
                         c.set(Calendar.SECOND,00);
                     }
                     Intent intent=new Intent(this,AlramRing.class);
-                    PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),101,intent,0);
+                    PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                     alarmManager.set(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),pendingIntent);
                     Toast.makeText(getApplicationContext(), "Alarm set for "+s+" minutes from now", Toast.LENGTH_SHORT).show();
                 }
@@ -558,7 +568,7 @@ public class MainActivity extends AppCompatActivity
                                 }
                             }
                             Intent intent=new Intent(MainActivity.this,AlramRing.class);
-                            PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),101,intent,0);
+                            PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                             alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
                             Toast.makeText(getApplicationContext(), "Alarm set for "+i+" Hours and "+i1+" minutes from now", Toast.LENGTH_SHORT).show();
                         }
@@ -568,6 +578,52 @@ public class MainActivity extends AppCompatActivity
                     timePickerDialog.show();
                 }
 
+            }
+            else if(se.toLowerCase().contains("remind me to")){
+
+                String reminder=se.substring(se.toLowerCase().indexOf("to")+2);
+                speak("When Do u want me to remind you ?");
+                AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                builder.setTitle("Please Select");
+                String [] strings={"EveryDay","Specific Days"};
+                builder.setItems(strings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch (i){
+                            case 0:
+                                speak("What Time ?");
+                                Calendar c=Calendar.getInstance();
+                                int h=c.get(Calendar.HOUR_OF_DAY);
+                                int m=c.get(Calendar.MINUTE);
+                                TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                        Intent intent=new Intent("remind");
+                                        intent.putExtra("hour",i);
+                                        intent.putExtra("minute",i1);
+                                        sendBroadcast(intent);
+                                    }
+                                };
+                                TimePickerDialog timePickerDialog=new TimePickerDialog(MainActivity.this,t,h,m,false);
+                                timePickerDialog.show();
+                                break;
+                            case 1:
+                                Dialog d=new Dialog(MainActivity.this);
+                                d.setContentView(R.layout.specifiv);
+                                Button b=(Button)d.findViewById(R.id.button2);
+                                d.show();
+                                break;
+                        }
+                    }
+                });
+                builder.create().show();
+            }
+            else if(se.toLowerCase().contains("open")){
+                String app=se.substring(se.toLowerCase().indexOf("open")+4);
+
+            }
+            else if(se.toLowerCase().contains("take a")&&se.toLowerCase().contains("selfie")){
+                selfie();
             }
 
             else{
@@ -579,7 +635,8 @@ public class MainActivity extends AppCompatActivity
         }
         else{
         speak("Kyaaaa ?");
-        }}
+        }
+        }
         catch (Exception e){
             speak("Sorry"+name+" I didnot get that"+" beacause Error: "+e.getMessage());
             Toast.makeText(this,e.toString(),Toast.LENGTH_LONG).show();
@@ -725,6 +782,18 @@ public class MainActivity extends AppCompatActivity
         }
         return j;
     }
+
+    void selfie(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        Uri photoUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath(),"helloJarvis.jpg"));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        intent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
+        intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1);
+        intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true);
+        startActivityForResult(intent, 7623);
+    }
+
 
 
 }

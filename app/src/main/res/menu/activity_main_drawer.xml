@@ -1,33 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:textColor="@android:color/white">
 
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/home"
-
-            android:title="Home" />
+            android:title="Home"
+            android:icon="@android:drawable/ic_menu_gallery"/>
         <item
             android:id="@+id/location"
-
             android:title="Location" />
         <item
             android:id="@+id/distance"
 
             android:title="Distance" />
 
+        <item
+            android:id="@+id/music"
+
+            android:title="Contacts" />
+        <item
+            android:id="@+id/social"
+            android:icon="@drawable/f"
+            android:title="Social" />
     </group>
-
-    <item android:title="Entertainment">
-        <menu>
-            <item
-                android:id="@+id/music"
-
-                android:title="Music" />
-            <item
-                android:id="@+id/social"
-
-                android:title="Social" />
-        </menu>
-    </item>
 
 </menu>

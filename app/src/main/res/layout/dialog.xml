@@ -9,6 +9,8 @@
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
+        android:textAlignment="center"
         android:text="Hi,What is your Name?" />
 
     <EditText
@@ -24,7 +26,7 @@
         android:id="@+id/button"
         android:layout_marginTop="10dp"
         android:textColor="@android:color/white"
-        android:background="@color/colorPrimaryDark"
+        android:background="@color/colorPrimary"
         android:textSize="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
