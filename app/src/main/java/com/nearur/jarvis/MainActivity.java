@@ -626,7 +626,7 @@ public class MainActivity extends AppCompatActivity
                 else if(se.contains("-")){
                     int a=Integer.parseInt(se.substring(0,se.indexOf('-')).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf('-')+1,se.length()).trim());
-                    String ans= String.valueOf(a-b);
+                    int ans=a-b;
                     speak("The answer is"+ans);
                 }
                 else if(se.contains("into")){
