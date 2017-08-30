@@ -7,4 +7,10 @@
         android:title="Stop"
         app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_delete"/>
+    <item
+        android:id="@+id/silent"
+        android:title="Silent On"
+        app:showAsAction="ifRoom"
+        />
+
 </menu>

@@ -3,11 +3,14 @@ package com.nearur.jarvis;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
@@ -56,18 +59,25 @@ public class Ai extends BroadcastReceiver {
         if(ac.equals("android.provider.Telephony.SMS_RECEIVED")){
             StringBuffer string=new StringBuffer();
             Toast.makeText(context,string.toString(),Toast.LENGTH_LONG).show();
-
-            i.putExtra("message","You have a new Text Message ");
+                    i.putExtra("message","You have a new Text Message ");
         }
 
         if(ac.equals("android.intent.action.PHONE_STATE")){
             String state=intent.getStringExtra(TelephonyManager.EXTRA_STATE);
             if(state.equals(TelephonyManager.EXTRA_STATE_RINGING)){
                 String  n=intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                i.putExtra("message","You have an Incoming Call from: "+n);
-            }
-        }
 
+                ContentResolver resolver = context.getContentResolver();
+                Uri uri= ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+                Cursor c=resolver.query(uri,null,null,null,null);
+                while (c.moveToNext()) {
+                    if ((c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).equals(n))) {
+                        i.putExtra("message","You have an Incoming Call from: "+c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)));
+                        break;
+                    }else{
+                        i.putExtra("message","You have an Incoming Call from: "+n);}
+            }}
+        }
         if(ac.equals("android.intent.action.BOOT_COMPLETED")){
             i.putExtra("message","All systems ready to Gear Up");
         }
