@@ -70,7 +70,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
         int id = v.getId();
         if (id == R.id.switch1) {
             if (s1.isChecked()) {
-                if (lcmanager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                if (lcmanager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(getApplicationContext(), "Please Provide Permission", Toast.LENGTH_LONG).show();
                         AlertDialog.Builder builder = new AlertDialog.Builder(DistanceCalculation.this);
@@ -92,7 +92,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                         builder.show();
                         ;
                     } else {
-                        lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
+                        lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
                             @Override
                             public void onLocationChanged(Location location) {
                                 if (location.getSpeed() > 13.889) {
@@ -139,7 +139,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 
                 } else {
                     pd.show();
-                    lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5, 5, new LocationListener() {
+                    lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             userLat = location.getLatitude();
@@ -190,7 +190,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 
                 } else {
                     pd.show();
-                    lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
+                    lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             venueLat = location.getLatitude();
@@ -272,7 +272,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                     // for ActivityCompat#requestPermissions for more details.
                     return;
                 }
-                lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
+                lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
                         if (location.getSpeed() > 13.889) {

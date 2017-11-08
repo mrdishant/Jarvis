@@ -92,12 +92,20 @@ public class Ai extends BroadcastReceiver {
         }
 
         if(ac.equals("remind")||ac.equals("android.intent.action.BOOT_COMPLETED")){
-            int h=intent.getIntExtra("hour",0);
-            int m=intent.getIntExtra("minute",0);
             Calendar c=Calendar.getInstance();
+            int h=intent.getIntExtra("hour",c.get(Calendar.HOUR_OF_DAY));
+            int m=intent.getIntExtra("minute",c.get(Calendar.MINUTE));
+            int d=intent.getIntExtra("date",c.get(Calendar.DATE));
+            int mm=intent.getIntExtra("month",c.get(Calendar.MONTH));
+            int y=intent.getIntExtra("year",c.get(Calendar.YEAR));
+
             c.set(Calendar.HOUR_OF_DAY,h);
             c.set(Calendar.MINUTE,m);
             c.set(Calendar.SECOND,00);
+            c.set(Calendar.DATE,d);
+            c.set(Calendar.MONTH,mm);
+            c.set(Calendar.YEAR,y);
+
             AlarmManager alarmManager=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
             Intent x=new Intent(context,AlramRing.class);
             x.putExtra("message",intent.getStringExtra("message"));

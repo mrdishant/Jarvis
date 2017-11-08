@@ -9,20 +9,26 @@
             android:icon="@android:drawable/ic_menu_gallery"/>
         <item
             android:id="@+id/location"
-            android:title="Location" />
+            android:title="Location Fetch" />
         <item
             android:id="@+id/distance"
 
-            android:title="Distance" />
+            android:title="Distance Calculator" />
 
-        <item
-            android:id="@+id/music"
-
-            android:title="Contacts" />
         <item
             android:id="@+id/social"
             android:icon="@drawable/f"
             android:title="Social" />
+
+        <item
+            android:id="@+id/music"
+            android:title="Contacts" />
+
     </group>
+
+    <item
+        android:id="@+id/aboutus"
+
+        android:title="About Us" />
 
 </menu>

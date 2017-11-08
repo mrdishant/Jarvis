@@ -99,6 +99,7 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
 
                                 double lat = location.getLatitude();
                                 double lon = location.getLongitude();
+                                buffer.append(lat+","+lon);
                                 Geocoder gc = new Geocoder(LocationFetch.this);
                                 try {
                                     List<Address> a = gc.getFromLocation(lat, lon, 5);

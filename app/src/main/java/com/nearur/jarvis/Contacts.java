@@ -35,8 +35,7 @@ public class Contacts extends AppCompatActivity {
 
         while(c.moveToNext()){
             StringBuffer o=new StringBuffer();
-           // o.append(c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))+"\n");
-            o.append(c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME))+"\n");
+            o.append(c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))+"\n");
             o.append(c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
             if(!arrayList.contains(o.toString()))
             arrayList.add(o.toString());

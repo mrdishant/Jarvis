@@ -4,13 +4,13 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class AlramRing extends AppCompatActivity {
 
     MediaPlayer mediaPlayer;
-    Button stop;
+    ImageButton stop;
     TextView textView;
 
     @Override
@@ -18,9 +18,9 @@ public class AlramRing extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alram_ring);
         textView=(TextView)findViewById(R.id.textView4);
-        stop=(Button)findViewById(R.id.buttonStop);
+        stop=(ImageButton) findViewById(R.id.buttonStop);
 
-        textView.setText(getIntent().getStringExtra("message").toString().toUpperCase());
+        textView.setText(getIntent().getStringExtra("message").toString());
         if(textView.getText().toString().toLowerCase().contains("wake up")){
             mediaPlayer=MediaPlayer.create(this,R.raw.alarm);
         }else{
