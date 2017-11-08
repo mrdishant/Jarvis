@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-public class A1 extends AppCompatActivity {
+public class SplashScreen extends AppCompatActivity {
 
     ImageView imageView;
 
@@ -22,7 +22,7 @@ public class A1 extends AppCompatActivity {
             @Override
             public void run() {
 
-                Intent i=new Intent(A1.this,MainActivity.class);
+                Intent i=new Intent(SplashScreen.this,MainActivity.class);
                 startActivity(i);
                 overridePendingTransition(R.anim.begin,R.anim.end);
                 finish();

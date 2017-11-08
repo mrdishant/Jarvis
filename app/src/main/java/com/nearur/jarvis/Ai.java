@@ -101,7 +101,7 @@ public class Ai extends BroadcastReceiver {
             AlarmManager alarmManager=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
             Intent x=new Intent(context,AlramRing.class);
             x.putExtra("message",intent.getStringExtra("message"));
-            PendingIntent pendingIntent=PendingIntent.getActivity(context,1023,x,0);
+            PendingIntent pendingIntent=PendingIntent.getActivity(context,(int)Math.random()*1023,x,0);
             Toast.makeText(context,"Okay I will Remind you",Toast.LENGTH_LONG).show();
             alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),AlarmManager.INTERVAL_DAY,pendingIntent);
         }

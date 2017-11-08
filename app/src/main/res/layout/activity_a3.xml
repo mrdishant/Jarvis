@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context="com.nearur.jarvis.A3">
+    tools:context="com.nearur.jarvis.LocationFetch">
 
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,7 +13,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context="com.nearur.jarvis.A3">
+    tools:context="com.nearur.jarvis.LocationFetch">
 
     <Switch
         android:id="@+id/switch2"

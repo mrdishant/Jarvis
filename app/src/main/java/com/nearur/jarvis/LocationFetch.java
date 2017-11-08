@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -14,19 +15,16 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.audiofx.BassBoost;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.provider.Telephony;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -35,13 +33,10 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
-public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, SensorEventListener {
+public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, SensorEventListener {
     Switch s;
     LocationManager lc;
     NotificationManager nc;
@@ -51,7 +46,6 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
     ProgressDialog pd;
     SeekBar sk;
     int count = 1;
-    BroadcastReceiver br;
     Vibrator vib;
     StringBuffer buffer =new StringBuffer();
 
@@ -64,21 +58,37 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
         sk.setOnSeekBarChangeListener(this);
         vib=(Vibrator)getSystemService(VIBRATOR_SERVICE);
         pd = new ProgressDialog(this);
-        pd.setMessage("Fetching Location...");
+        pd.setMessage("Fetching LocationFetch...");
         s.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (s.isChecked()) {
                     if (lc.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                        if (ActivityCompat.checkSelfPermission(A3.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(A3.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            Toast.makeText(A3.this, "Please Enable Permissions", Toast.LENGTH_LONG).show();
-                        }
+                        if (ActivityCompat.checkSelfPermission(LocationFetch.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(LocationFetch.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(LocationFetch.this);
+                            builder.setTitle("Need Storage Permission");
+                            builder.setMessage("This app needs storage permission.");
+                            builder.setPositiveButton("Grant", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                    ActivityCompat.requestPermissions(LocationFetch.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 7623);
+                                }
+                            });
+                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                            builder.show();
+                        }else {
                         pd.show();
                         lc.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                             @Override
-                            public void onLocationChanged(Location location) {
+                            public void onLocationChanged(android.location.Location location) {
                                 if (location.getSpeed() > 13.889) {
-                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(A3.this);
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationFetch.this);
                                     builder.setContentTitle("Speed Limit");
                                     builder.setContentText(location.getSpeed() + "");
                                     builder.setSmallIcon(R.drawable.j5);
@@ -89,7 +99,7 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
 
                                 double lat = location.getLatitude();
                                 double lon = location.getLongitude();
-                                Geocoder gc = new Geocoder(A3.this);
+                                Geocoder gc = new Geocoder(LocationFetch.this);
                                 try {
                                     List<Address> a = gc.getFromLocation(lat, lon, 5);
                                     for (Address z : a) {
@@ -102,7 +112,7 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
                                     t.setText(s);
                                     pd.dismiss();
                                     if (s.contains("3020") && s.contains("Ganesh Nagar")) {
-                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(A3.this);
+                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationFetch.this);
                                         builder.setContentText("Home Sweet Home");
                                         builder.setContentTitle("Welcome Home Sir");
                                         builder.setSmallIcon(R.drawable.j5);
@@ -112,9 +122,19 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
                                     }
 
                                     if (s.contains("Krishna")&&s.contains("Nagar")&&s.contains("Sardar")) {
-                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(A3.this);
+                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationFetch.this);
                                         builder.setContentText("Back To Work");
                                         builder.setContentTitle("Welcome To Auribises Sir");
+                                        builder.setSmallIcon(R.drawable.j5);
+                                        builder.setDefaults(Notification.DEFAULT_ALL);
+                                        Notification n = builder.build();
+                                        nc.notify(count++, n);
+                                    }
+
+                                    if (s.toLowerCase().contains("guru")&&s.toLowerCase().contains("nanak")&&s.toLowerCase().contains("college")) {
+                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationFetch.this);
+                                        builder.setContentText("Back To Work");
+                                        builder.setContentTitle("Welcome To College Sir");
                                         builder.setSmallIcon(R.drawable.j5);
                                         builder.setDefaults(Notification.DEFAULT_ALL);
                                         Notification n = builder.build();
@@ -140,9 +160,9 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
                             public void onProviderDisabled(String provider) {
 
                             }
-                        });
+                        });}
                     } else {
-                        Toast.makeText(A3.this, "Please Enable Gps", Toast.LENGTH_LONG).show();
+                        Toast.makeText(LocationFetch.this, "Please Enable Gps", Toast.LENGTH_LONG).show();
                         s.setChecked(false);
                     }
                 }
@@ -172,7 +192,7 @@ public class A3 extends AppCompatActivity implements SeekBar.OnSeekBarChangeList
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (progress == 100) {
-            Intent i = new Intent(this, A2.class);
+            Intent i = new Intent(this, DistanceCalculation.class);
             startActivity(i);
         }
     }

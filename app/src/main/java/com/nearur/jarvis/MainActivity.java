@@ -81,13 +81,12 @@ public class MainActivity extends AppCompatActivity
     String name = "";
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
-    ArrayList<String> poem = new ArrayList<>();
     ContentResolver resolver;
     int scorej = 0, scoreu = 0;
     private AIService aiService;
-    String parameterString;
+    String parameterString="Hi";
     Result result;
-    final ai.api.android.AIConfiguration config = new   ai.api.android.AIConfiguration("bb1c2f3fb8b24619b31abd641e184459",
+    final ai.api.android.AIConfiguration config = new   ai.api.android.AIConfiguration("a3527aa431634f25a930d84b00156f82",
             AIConfiguration.SupportedLanguages.English,
             ai.api.android.AIConfiguration.RecognitionEngine.System);
 
@@ -121,7 +120,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
         a.put("shutdown", "Okay " + name);
-        a.put("who is your father", "Mr Tony Stark");
         a.put("who are you", "I am Jarvis, Personal Assistant of Mr Dishant Mahajan");
         a.put("what this means", "It stands for Just A Rather Very Intelligent System");
         a.put("how are you","I am Fine "+name+" what about you ?");
@@ -149,42 +147,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        poem.add("Twinkle, twinkle, little star,\n" +
-                "How I wonder what you are!\n" +
-                "Up above the world so high,\n" +
-                "Like a diamond in the sky.\n");
-
-        poem.add("Humpty Dumpty sat on a wall,\n" +
-                "Humpty Dumpty had a great fall;\n" +
-                "All the king's horses and all the king's men\n" +
-                "Couldn't put Humpty together again.");
-
-        poem.add("Ring-a-ring-a roses, \n" +
-                "\n" +
-                "A pocket full of posies, \n" +
-                "\n" +
-                "Ashes! Ashes! \n" +
-                "\n" +
-                "We all fall down. \n" +
-                "\n" +
-                "Ring-a-ring-a roses, \n" +
-                "\n" +
-                "A pocket full of posies, \n" +
-                "\n" +
-                "A-tishoo! A-tishoo! \n" +
-                "\n" +
-                "We all fall down.");
-        poem.add("Teri Aankhon Ki, Namkeen Mastiyaan....\n" +
-                "Teri Hansi Ki, Beparwaah Gustakhiyaan....\n" +
-                "Teri Zulfon Ki, Lehraati Angdaiyaan....\n" +
-                "Nahi Bhoolunga Main....\n" +
-                "Jab Tak Hai Jaan !!!\n" +
-                "Jab Tak Hai Jaan !!!");
-        poem.add("Rain rain go away,\n" +
-                "Come again another day.\n" +
-                "Little Johnny wants to play;\n" +
-                "Rain, rain, go to Spain,\n" +
-                "Never show your face again!\n");
     }
 
     @Override
@@ -261,9 +223,9 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.music) {
             i = new Intent(this, Contacts.class);
         } else if (id == R.id.distance) {
-            i = new Intent(this, A2.class);
+            i = new Intent(this, DistanceCalculation.class);
         } else if (id == R.id.location) {
-            i = new Intent(this, A3.class);
+            i = new Intent(this, LocationFetch.class);
         } else if (id == R.id.social) {
             i = new Intent(this, Social.class);
         }
@@ -308,6 +270,11 @@ public class MainActivity extends AppCompatActivity
         values.put(Util.date,frt.format(d).toString());
         values.put(Util.thing,s);
         Uri x=resolver.insert(Util.u,values);
+        if(Integer.parseInt(x.getLastPathSegment())>0){
+            speak("Sure i ll remember that");
+        }else{
+            speak("Sorry Some Error Occured Please Try Again");
+        }
         Toast.makeText(MainActivity.this,"Done"+x.getLastPathSegment(),Toast.LENGTH_LONG).show();
     }
 
@@ -405,12 +372,11 @@ public class MainActivity extends AppCompatActivity
         else if(s.equalsIgnoreCase("scissors")&&j.equalsIgnoreCase("paper")){
             scoreu++;
         }
-        return (j+"\nScore is :"+scorej+" / "+scoreu);
+        return (j+"\nScore is : \nJarvis: "+scorej+"\n"+name+" : "+scoreu);
     }
 
     void selfie(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
         Uri photoUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath(),"helloJarvis.jpg"));
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         intent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
@@ -421,16 +387,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onResult(AIResponse response) {
-
-
         result = response.getResult();
          parameterString =result.getFulfillment().getSpeech();
+        Toast.makeText(getApplicationContext(),parameterString,Toast.LENGTH_LONG).show();
             new task().execute(result.getResolvedQuery());
     }
 
     @Override
     public void onError(AIError error) {
-
+        speak("Some Error Occured");
     }
 
     @Override
@@ -463,10 +428,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected Void doInBackground(String... bundle) {
-            if(!b){
-                Looper.prepare();
-                b=true;
-            }
+
            try{
             if (bundle[0] != null  && bundle[0].length()>0) {
                se = bundle[0];
@@ -477,7 +439,7 @@ public class MainActivity extends AppCompatActivity
                 else if (se.contains("location")) {
                     speak("Okay Let me Fetch it");
                     final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(MainActivity.this, "Please Give Permission", Toast.LENGTH_LONG).show();
                     }
                     locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
@@ -494,11 +456,9 @@ public class MainActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
                             for (int i = 0; i < a.get(0).getMaxAddressLineIndex(); i++) {
-                                buffer.append(a.get(0).getAddressLine(i) + ",");
+                                buffer.append(a.get(i).getAddressLine(i) + ",");
                             }
                             buffer.append("\n");
-                            Intent intent=new Intent(MainActivity.this,MapsActivity.class);
-                            startActivity(intent);
                             speak(name + " Your Location is " + buffer.toString());
                             t.setText(" Your Location is " + buffer.toString());
                         }
@@ -554,6 +514,7 @@ public class MainActivity extends AppCompatActivity
                             speak("Okay " + name);
                             found=true;
                             startActivity(i);
+                            break;
                         }
                     }
                     if(!found){
@@ -571,15 +532,6 @@ public class MainActivity extends AppCompatActivity
                     speak(buffer.toString());
                 }
 
-                else if(se.contains("poem")){
-                    Collections.shuffle(poem);
-                    if(poem.get(0).contains("Teri Aankhon Ki, Namkeen Mastiyaan")){
-                        mp=MediaPlayer.create(MainActivity.this,R.raw.poem);
-                        mp.start();
-                    }else{
-                        speak(poem.get(0));
-                    }
-                }
 
                 else if(se.equalsIgnoreCase("English Alphabets")){
                     speak("A for Apple\n"+"B for Ball\n"+"C for Cat\n"+"D for Dog\n");
@@ -638,11 +590,6 @@ public class MainActivity extends AppCompatActivity
                 else if(se.toLowerCase().contains("i am fine")){
                     speak("That's  Cool,So tell me what i can do for u ?  or u can try by saying what u can do ?");
                 }
-                else if(se.contains("date")){
-                    Calendar c=Calendar.getInstance();
-                    SimpleDateFormat frmt=new SimpleDateFormat("dd/MM/yyyy");
-                    speak(frmt.format(c.getTime()).toString());
-                }
                 else if(se.contains("time")) {
                     Calendar d =Calendar.getInstance();
                     SimpleDateFormat frmt = new SimpleDateFormat("hh:mm:ss a");
@@ -673,7 +620,7 @@ public class MainActivity extends AppCompatActivity
                     speak("The answer is "+ans);
                 }
 
-                else if(se.toLowerCase().contains("play")&&se.toLowerCase().contains("music")){
+                else if(parameterString.equals("music")){
                     speak("Sure "+name);
                     Cursor c=getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null,null);
                     ArrayList<String> arrayList=new ArrayList<>();
@@ -895,9 +842,9 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            b=false;
+
             t.setText(se.toUpperCase());
+            super.onPostExecute(aVoid);
         }
     }
 
