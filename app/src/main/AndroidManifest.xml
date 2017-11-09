@@ -93,8 +93,8 @@
             android:exported="true" />
 
         <activity android:name=".Music" />
-
         <activity android:name=".TicTacToe" />
+        <activity android:name=".AboutUs"></activity>
     </application>
 
 </manifest>

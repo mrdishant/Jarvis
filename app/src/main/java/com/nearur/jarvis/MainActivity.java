@@ -238,6 +238,8 @@ public class MainActivity extends AppCompatActivity
             i = new Intent(this, LocationFetch.class);
         } else if (id == R.id.social) {
             i = new Intent(this, Social.class);
+        } else if (id == R.id.aboutus) {
+            i = new Intent(this, AboutUs.class);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -459,7 +461,7 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 }, Looper.myLooper());
-                buffer.append(d+" From Dishant Mahajan ,Message Sent By Jarvis");
+                buffer.append(d+" I am in Danger Please Help!!! "+" From Dishant Mahajan ,Message Sent By Jarvis");
                 String num="+919023074222";
                 SmsManager smsManager = SmsManager.getDefault();
                 smsManager.sendTextMessage(num,null,buffer.toString(),null,null);

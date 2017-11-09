@@ -8,8 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,7 +23,6 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DistanceCalculation extends AppCompatActivity implements View.OnClickListener {
 
@@ -70,7 +67,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
         int id = v.getId();
         if (id == R.id.switch1) {
             if (s1.isChecked()) {
-                if (lcmanager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                if (lcmanager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(getApplicationContext(), "Please Provide Permission", Toast.LENGTH_LONG).show();
                         AlertDialog.Builder builder = new AlertDialog.Builder(DistanceCalculation.this);
@@ -92,7 +89,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                         builder.show();
                         ;
                     } else {
-                        lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
+                        lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                             @Override
                             public void onLocationChanged(Location location) {
                                 if (location.getSpeed() > 13.889) {
@@ -139,12 +136,12 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 
                 } else {
                     pd.show();
-                    lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5, 5, new LocationListener() {
+                    lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             userLat = location.getLatitude();
                             userLng = location.getLongitude();
-                            StringBuffer buffer = new StringBuffer();
+                            /*StringBuffer buffer = new StringBuffer();
                             Geocoder gc = new Geocoder(DistanceCalculation.this);
                             try {
                                 List<Address> a = gc.getFromLocation(userLat, userLng, 5);
@@ -153,16 +150,16 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                                     buffer.append(z.getAddressLine(i) + ",");
                                 }
                                 buffer.append("\n");
-
-                                start = buffer.toString();
+*/
+                                start ="Latitude : "+userLat+"\nLongitude : "+userLng;
                                 cstart.setText(start);
                                 pd.dismiss();
                                 cend.setText("");
                                 lcmanager.removeUpdates(this);
                                 btn.setText("Stop");
-                            } catch (Exception e) {
+                            /*} catch (Exception e) {
 
-                            }
+                            }*/
 
                         }
 
@@ -190,12 +187,12 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 
                 } else {
                     pd.show();
-                    lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
+                    lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             venueLat = location.getLatitude();
                             venueLng = location.getLongitude();
-                            StringBuffer buffer = new StringBuffer();
+                            /*StringBuffer buffer = new StringBuffer();
                             Geocoder gc = new Geocoder(DistanceCalculation.this);
                             try {
                                 List<Address> a = gc.getFromLocation(venueLat, venueLng, 5);
@@ -204,15 +201,15 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                                     buffer.append(z.getAddressLine(i) + ",");
                                 }
                                 buffer.append("\n");
-
-                                end = buffer.toString();
+*/
+                                end ="Latitude : "+venueLat+"\nLongitude : "+venueLng;
                                 cend.setText(end);
                                 pd.dismiss();
                                 lcmanager.removeUpdates(this);
                                 btn.setText("Calculate");
-                            } catch (Exception e) {
+                           /* } catch (Exception e) {
 
-                            }
+                            }*/
 
                         }
 
@@ -272,7 +269,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                     // for ActivityCompat#requestPermissions for more details.
                     return;
                 }
-                lcmanager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 5, new LocationListener() {
+                lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
                         if (location.getSpeed() > 13.889) {

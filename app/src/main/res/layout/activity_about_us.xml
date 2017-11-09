@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/dark"
+    android:padding="16dp"
+    tools:context="com.nearur.jarvis.AboutUs">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Dishant Mahajan"
+        android:textSize="30dp"
+        android:textStyle="italic"
+        android:textColor="@android:color/white"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="D3CSEA1"
+        android:textSize="24dp"
+        android:textStyle="italic"
+        android:textColor="@android:color/white"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="1507567"
+        android:textSize="24dp"
+        android:textStyle="italic"
+        android:textColor="@android:color/white"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Project : Jarvis"
+        android:textSize="30dp"
+        android:textStyle="italic"
+        android:textColor="@android:color/white"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_gravity="bottom"
+        android:layout_marginTop="350dp"
+        android:text="(To Contact Just take The Phone Near Your Ear)"
+        android:textSize="24dp"
+        android:textStyle="italic"
+        android:textColor="@android:color/white"/>
+
+
+
+</LinearLayout>
