@@ -9,24 +9,32 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import com.vstechlab.easyfonts.EasyFonts;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class AboutUs extends AppCompatActivity implements SensorEventListener {
 
     Sensor sensor;
     SensorManager sensorManager;
+    TextView textView;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about_us);
-        getSupportActionBar().setTitle("About US");
+        getSupportActionBar().hide();
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        textView=(TextView)findViewById(R.id.abouttext);
+        textView.setTypeface(EasyFonts.captureIt(AboutUs.this));
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        new SweetAlertDialog(this,SweetAlertDialog.CUSTOM_IMAGE_TYPE).setCustomImage(R.drawable.about)
+                .setTitleText("Developer").setContentText("Dishant Mahajan\nD3CSEA1\nRoll:1507567\nPhone:9023074222").show();
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -40,13 +48,13 @@ public class AboutUs extends AppCompatActivity implements SensorEventListener {
                 String phone = "+919023074222";
                 Intent i = new Intent(Intent.ACTION_CALL);
                 i.setData(Uri.parse("tel:" + phone));
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Please Give Permissions", Toast.LENGTH_SHORT).show();
-                    Intent x=new Intent();
-                    x.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    x.setData(Uri.fromParts("package",getPackageName(),null));
-                    startActivity(x);
+                if (ActivityCompat.checkSelfPermission(AboutUs.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(AboutUs.this,
+                            new String[]{Manifest.permission.CALL_PHONE},
+                            1);
+                    return;
                 }
+
                 startActivity(i);
             }
         }
@@ -55,5 +63,11 @@ public class AboutUs extends AppCompatActivity implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        sensorManager.unregisterListener(AboutUs.this,sensor);
+        super.onDestroy();
     }
 }

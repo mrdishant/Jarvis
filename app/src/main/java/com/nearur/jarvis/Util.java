@@ -13,6 +13,7 @@ public class Util {
     public static final int vers=1;
 
     public static final String tab="Remember";
+    public static final String tab1="Requests";
     public static final String date="Date";
     public static final String thing="Thing";
 
@@ -21,6 +22,12 @@ public class Util {
             "Thing text" +
             ")";
 
+    public static final String query1="create table Requests(" +
+            "Message text," +
+            "Owner int" +
+            ")";
+
     public static final Uri u=Uri.parse("content://com.nearur.jarvis.stark/"+tab);
 
+    public static final Uri u1=Uri.parse("content://com.nearur.jarvis.stark/"+tab1);
 }

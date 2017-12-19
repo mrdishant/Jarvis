@@ -6,7 +6,7 @@
         <item
             android:id="@+id/home"
             android:title="Home"
-            android:icon="@android:drawable/ic_menu_gallery"/>
+            android:icon="@drawable/home"/>
         <item
             android:id="@+id/location"
             android:title="Location Fetch" />
@@ -17,7 +17,6 @@
 
         <item
             android:id="@+id/social"
-            android:icon="@drawable/f"
             android:title="Social" />
 
         <item
@@ -28,7 +27,7 @@
 
     <item
         android:id="@+id/aboutus"
-
+        android:icon="@drawable/about"
         android:title="About Us" />
 
 </menu>

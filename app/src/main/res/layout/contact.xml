@@ -8,6 +8,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/textcontact"
         android:textSize="16dp"
-        android:textColor="@color/colorPrimary"/>
+        android:textColor="@android:color/white"/>
 
 </LinearLayout>

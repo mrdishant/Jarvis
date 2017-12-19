@@ -3,7 +3,6 @@ package com.nearur.jarvis;
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,6 +23,8 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class DistanceCalculation extends AppCompatActivity implements View.OnClickListener {
 
     Switch s1;
@@ -31,7 +32,8 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
     CheckedTextView cstart, cend;
     LocationManager lcmanager;
     NotificationManager ncmanager;
-    ProgressDialog pd;
+
+    SweetAlertDialog sweetAlertDialog;
     int count = 1;
     ArrayList<Float> speed;
     String start, end;
@@ -44,8 +46,11 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
         cend = (CheckedTextView) findViewById(R.id.checkedTextViewEnd);
         lcmanager = (LocationManager) getSystemService(LOCATION_SERVICE);
         ncmanager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        pd = new ProgressDialog(DistanceCalculation.this);
-        pd.setMessage("Fetching LocationFetch...");
+
+        sweetAlertDialog=new SweetAlertDialog(this,SweetAlertDialog.PROGRESS_TYPE);
+        sweetAlertDialog.setContentText("Fetching Location");
+        sweetAlertDialog.setTitleText("Location");
+
         s1.setOnClickListener(this);
 
         btn.setOnClickListener(this);
@@ -135,7 +140,8 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
                 } else {
-                    pd.show();
+                    sweetAlertDialog.show();
+
                     lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
@@ -153,7 +159,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 */
                                 start ="Latitude : "+userLat+"\nLongitude : "+userLng;
                                 cstart.setText(start);
-                                pd.dismiss();
+                                sweetAlertDialog.dismiss();
                                 cend.setText("");
                                 lcmanager.removeUpdates(this);
                                 btn.setText("Stop");
@@ -186,7 +192,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
                 } else {
-                    pd.show();
+                    sweetAlertDialog.show();
                     lcmanager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
@@ -204,7 +210,7 @@ public class DistanceCalculation extends AppCompatActivity implements View.OnCli
 */
                                 end ="Latitude : "+venueLat+"\nLongitude : "+venueLng;
                                 cend.setText(end);
-                                pd.dismiss();
+                                sweetAlertDialog.dismiss();
                                 lcmanager.removeUpdates(this);
                                 btn.setText("Calculate");
                            /* } catch (Exception e) {

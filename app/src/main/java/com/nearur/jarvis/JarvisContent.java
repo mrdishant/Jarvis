@@ -65,6 +65,7 @@ public class JarvisContent extends ContentProvider {
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
             sqLiteDatabase.execSQL(Util.query);
+            sqLiteDatabase.execSQL(Util.query1);
         }
 
         @Override

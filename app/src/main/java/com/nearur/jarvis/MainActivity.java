@@ -1,15 +1,16 @@
 package com.nearur.jarvis;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +27,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,7 +39,6 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -46,15 +48,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.vstechlab.easyfonts.EasyFonts;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -65,11 +72,16 @@ import java.util.Date;
 import java.util.List;
 
 import ai.api.AIConfiguration;
+import ai.api.AIDataService;
 import ai.api.AIListener;
+import ai.api.AIServiceException;
 import ai.api.android.AIService;
 import ai.api.model.AIError;
+import ai.api.model.AIRequest;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import pl.droidsonroids.gif.GifImageView;
 
 
 public class MainActivity extends AppCompatActivity
@@ -79,11 +91,14 @@ public class MainActivity extends AppCompatActivity
     TextToSpeech ts;
     SensorManager sc;
     Sensor sensor;
+    SweetAlertDialog s;
     Vibrator vib;
-    TextView t;
+   // TextView t;
+    ListView listView;
+    ArrayList<Message> arrayList;
+    Adapter adapter;
     String f = "";
     AlarmManager alarmManager;
-    ProgressDialog p;
     TimePickerDialog timePickerDialog;
     MediaPlayer mp = new MediaPlayer();
     String name = "";
@@ -94,10 +109,13 @@ public class MainActivity extends AppCompatActivity
     private AIService aiService;
     String parameterString = "Hi";
     LocationManager locationManager;
+    GifImageView imageView;
+    EditText editText;
     Result result;
     final ai.api.android.AIConfiguration config = new ai.api.android.AIConfiguration("a3527aa431634f25a930d84b00156f82",
             AIConfiguration.SupportedLanguages.English,
             ai.api.android.AIConfiguration.RecognitionEngine.System);
+
 
 
     @Override
@@ -106,17 +124,22 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().hide();
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        listView=(ListView)findViewById(R.id.listtext);
+        arrayList=new ArrayList<>();
+        adapter=new Adapter(getApplicationContext(),R.layout.dialog1,arrayList);
+        listView.setAdapter(adapter);
         sc = (SensorManager) getSystemService(SENSOR_SERVICE);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         sensor = sc.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sc.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        imageView=(GifImageView)findViewById(R.id.gif);
+        editText=(EditText)findViewById(R.id.editTextquery);
 
-        t = (TextView) findViewById(R.id.txt);
-        p = new ProgressDialog(this);
         resolver = getContentResolver();
-        p.setMessage("Listening....");
 
         preferences = getSharedPreferences("name", MODE_PRIVATE);
         editor = preferences.edit();
@@ -133,18 +156,130 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        new AsyncTask<Void,Void,Void>(){
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                String[] p={"Message","Owner"};
+                Cursor c=resolver.query(Util.u1,p,null,null,null);
+                if(c!=null||c.getCount()>0){
+                    while (c.moveToNext()){
+                        arrayList.add(new Message(c.getString(0),c.getInt(1)));
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                listView.setSelection(adapter.getCount() - 1);
+                super.onPostExecute(aVoid);
+            }
+        }.execute();
+
+        editText.setTypeface(EasyFonts.droidSerifRegular(MainActivity.this));
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if(charSequence.length()>0){
+                        imageView.setImageResource(R.drawable.send);
+                    }else{
+                        imageView.setImageResource(R.drawable.j5);
+                    }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
 
 
         aiService = AIService.getService(MainActivity.this, config);
         aiService.setListener(MainActivity.this);
+        final AIDataService aiDataService = new AIDataService(config);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("ResourceType")
             @Override
             public void onClick(View view) {
-                try{aiService.startListening();}catch (Exception e){
+                if(!isConnected(MainActivity.this)){
+                    s = new SweetAlertDialog(MainActivity.this, SweetAlertDialog.WARNING_TYPE);
+                    s.setTitleText("No Internet Connection");
+                    s.setContentText("You need to enable Moblie Data or Wi-Fi to progress further.");
+                    s.setConfirmText("WI-Fi");
+                    s.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sweetAlertDialog) {
+                            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                            startActivityForResult(intent,101);
 
+                        }
+                    });
+                    s.setCancelText("Mobile Data");
+                    s.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sweetAlertDialog) {
+                            Intent intent = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
+                            startActivityForResult(intent,101);
+
+                        }
+                    });
+                    s.show();
+                }else{
+                    if(editText.getText().toString().length()>0){
+                        AIRequest r=new AIRequest();
+                        r.setQuery(editText.getText().toString());
+                        new AsyncTask<AIRequest,Void,AIResponse>(){
+
+                            @Override
+                            protected AIResponse doInBackground(AIRequest... aiRequests) {
+                                final AIRequest request = aiRequests[0];
+                                try {
+                                    final AIResponse response = aiDataService.request(request);
+                                    return response;
+                                } catch (AIServiceException e) {
+                                }
+                                return null;
+                            }
+                            @Override
+                            protected void onPostExecute(AIResponse response) {
+                                if (response != null) {
+                                    result = response.getResult();
+                                    parameterString = result.getFulfillment().getSpeech();
+                                    ContentValues values=new ContentValues();
+                                    values.put("Message",result.getResolvedQuery());
+                                    values.put("Owner",0);
+                                    resolver.insert(Util.u1,values);
+                                    ContentValues values1=new ContentValues();
+                                    values.put("Message",parameterString);
+                                    values.put("Owner",1);
+                                    resolver.insert(Util.u1,values);
+                                    new task().execute(result.getResolvedQuery());
+                                }
+                            }
+                        }.execute(r);
+                        editText.setText("");
+                    }
+                    else{
+                try{
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.RECORD_AUDIO},
+                                1);
+                        return;
+                    }
+
+                    aiService.startListening();}catch (Exception e){}
+                }
                 }
             }
         });
@@ -195,7 +330,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            speak("");
+            speak("",1);
         } else if (id == R.id.silent) {
             if (item.getTitle() == "Silent Off") {
                 PackageManager pm = MainActivity.this.getPackageManager();
@@ -250,11 +385,14 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void speak(String text) {
+    private void speak(String text,int owner) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+            arrayList.add(new Message(text,owner));
+
         } else {
             ts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+            arrayList.add(new Message(text,owner));
         }
     }
 
@@ -284,9 +422,9 @@ public class MainActivity extends AppCompatActivity
         values.put(Util.thing, s);
         Uri x = resolver.insert(Util.u, values);
         if (Integer.parseInt(x.getLastPathSegment()) > 0) {
-            speak("Sure i ll remember that");
+            speak("Sure i ll remember that",1);
         } else {
-            speak("Sorry Some Error Occured Please Try Again");
+            speak("Sorry Some Error Occured Please Try Again",1);
         }
         Toast.makeText(MainActivity.this, "Remembered " + x.getLastPathSegment(), Toast.LENGTH_LONG).show();
     }
@@ -314,7 +452,7 @@ public class MainActivity extends AppCompatActivity
         if (!found) {
             buffer.append("Sorry , i don't know about that");
         }
-        speak(buffer.toString());
+        speak(buffer.toString(),1);
         return buffer.toString();
     }
 
@@ -335,9 +473,9 @@ public class MainActivity extends AppCompatActivity
         }
         c.close();
         if (cr > 0) {
-            speak("Okay " + name + " I'll " + s);
+            speak("Okay " + name + " I'll " + s,1);
         } else {
-            speak("I guess you haven't told me " + s.substring(s.indexOf("forget") + 7));
+            speak("I guess you haven't told me " + s.substring(s.indexOf("forget") + 7),1);
         }
     }
 
@@ -377,6 +515,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     void selfie() {
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
        // intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         intent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT);
@@ -389,13 +528,21 @@ public class MainActivity extends AppCompatActivity
     public void onResult(AIResponse response) {
         result = response.getResult();
         parameterString = result.getFulfillment().getSpeech();
-        Toast.makeText(getApplicationContext(), parameterString, Toast.LENGTH_LONG).show();
+        ContentValues values=new ContentValues();
+        values.put("Message",result.getResolvedQuery());
+        values.put("Owner",0);
+        resolver.insert(Util.u1,values);
+        ContentValues values1=new ContentValues();
+        values.put("Message",parameterString);
+        values.put("Owner",1);
+        resolver.insert(Util.u1,values);
         new task().execute(result.getResolvedQuery());
     }
 
     @Override
     public void onError(AIError error) {
         //speak("Some Error Occured");
+        imageView.setImageResource(R.drawable.j5);
     }
 
     @Override
@@ -405,23 +552,24 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListeningStarted() {
-        p.show();
+        imageView.setImageResource(R.drawable.ll);
     }
 
     @Override
     public void onListeningCanceled() {
-        p.dismiss();
+        imageView.setImageResource(R.drawable.j5);
     }
 
     @Override
     public void onListeningFinished() {
-        p.dismiss();
+        imageView.setImageResource(R.drawable.j5);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         Sensor s = sensorEvent.sensor;
         if (s == sensor) {
+            final String d;
             float[] v = sensorEvent.values;
             float x = v[0];
             float y = v[1];
@@ -431,22 +579,38 @@ public class MainActivity extends AppCompatActivity
                 vib.vibrate(500);
                 Date date = new Date();
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-                String d = formatter.format(date);
+                d = formatter.format(date);
                 final StringBuffer buffer = new StringBuffer();
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Please Give Permissions", Toast.LENGTH_SHORT).show();
-                    Intent x1=new Intent();
-                    x1.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    x1.setData(Uri.fromParts("package",getPackageName(),null));
-                    startActivity(x1);
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            1);
+                    return;
                 }
-                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,5,10 ,new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
-                            buffer.append(location.getLatitude() + "," + location.getLongitude());
-                    }
+                        double lat = location.getLatitude();
+                        double lon = location.getLongitude();
+                        buffer.append(lat + "," + lon);
+                        Geocoder gc = new Geocoder(MainActivity.this);
+                        try {
+                            List<Address> a = gc.getFromLocation(lat, lon, 5);
+                            Address z=a.get(0);
+                                for (int i = 0; i < z.getMaxAddressLineIndex(); i++) {
+                                    buffer.append(z.getAddressLine(i) + ",");
+                                }
+                                buffer.append("\n");
 
-                    @Override
+                            buffer.append(d + "\n I am in Danger Please Help!!! " + " From " + name + " ,Message Sent By Jarvis");
+                            String num = "+919023074222";
+                            SmsManager smsManager = SmsManager.getDefault();
+                            smsManager.sendTextMessage(num, null, buffer.toString(), null, null);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                        @Override
                     public void onStatusChanged(String s, int i, Bundle bundle) {
 
                     }
@@ -460,11 +624,7 @@ public class MainActivity extends AppCompatActivity
                     public void onProviderDisabled(String s) {
 
                     }
-                }, Looper.myLooper());
-                buffer.append(d+" I am in Danger Please Help!!! "+" From Dishant Mahajan ,Message Sent By Jarvis");
-                String num="+919023074222";
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(num,null,buffer.toString(),null,null);
+                });
                 sc.unregisterListener(this,sensor);
             }
     }
@@ -489,14 +649,21 @@ public class MainActivity extends AppCompatActivity
            try{
             if (bundle[0] != null  && bundle[0].length()>0) {
                se = bundle[0];
+               arrayList.add(new Message(se,0));
 
                 if (parameterString.equals("location")) {
-                    speak("Okay Let me Fetch it");
+                    speak("Okay Let me Fetch it",1);
                     publishProgress(35);
                 }
 
                 else if(parameterString.equals("selfie")){
-                     speak("Smile Please");
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.CAMERA},
+                                1);
+                        return null;
+                    }
+                     speak("Smile Please",1);
                      publishProgress(12);
                  }
 
@@ -510,18 +677,30 @@ public class MainActivity extends AppCompatActivity
                     for(PackageInfo p:packages) {
                         if (p.packageName.contains(app.toLowerCase())) {
                             Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(p.packageName);
-                            speak("Opening " + app);
+                            speak("Opening " + app,1);
                             found=true;
                             startActivity(LaunchIntent);
                             break;
                         }
                     }if(!found){
-                        speak(app+" either not installed or name not correct");
+                        speak(app+" either not installed or name not correct",1);
                     }
                 }
 
                 else if (se.contains("call")) {
                     String namep = se.toLowerCase().substring(se.toLowerCase().indexOf("call")+5).trim();
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_CONTACTS},
+                                1);
+                        return null ;
+                    }
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.CALL_PHONE},
+                                1);
+                        return null ;
+                    }
                     boolean found =false;
                     ContentResolver resolver = getContentResolver();
                     Uri uri= ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
@@ -531,21 +710,14 @@ public class MainActivity extends AppCompatActivity
                             String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                             Intent i = new Intent(Intent.ACTION_CALL);
                             i.setData(Uri.parse("tel:"+phone));
-                            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                Toast.makeText(MainActivity.this, "Please Give Permissions", Toast.LENGTH_SHORT).show();
-                                Intent x=new Intent();
-                                x.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                x.setData(Uri.fromParts("package",getPackageName(),null));
-                                startActivity(x);
-                            }
-                            speak("Okay " + name);
+                            speak("Okay " + name,1);
                             found=true;
                             startActivity(i);
                             break;
                         }
                     }
                     if(!found){
-                        speak("No Contact Found Can U please Specify");
+                        speak("No Contact Found Can U please Specify",1);
                     }
 
                 }
@@ -558,24 +730,23 @@ public class MainActivity extends AppCompatActivity
                         for(int i=1;i<=10;i++){
                             buffer.append(num+" "+i+" za "+(num*i)+"\n");
                         }
-                        speak(buffer.toString());
-
+                        speak(buffer.toString(),1);
                     }else{
                          int num=Integer.parseInt(se.substring(se.indexOf("of")+3,se.length()));
                         StringBuffer buffer=new StringBuffer();
                         for(int i=1;i<=10;i++){
                             buffer.append(num+" "+i+" za "+(num*i)+"\n");
                         }
-                        speak(buffer.toString());
+                        speak(buffer.toString(),1);
                     }
                      }catch (Exception e){
-                         speak("Please Give a Valid Number");
+                         speak("Please Give a Valid Number",1);
                      }
                  }
 
                 else if(se.toLowerCase().contains("remember that")){
                     publishProgress(45);
-                    speak("Okay i'll remember that");
+                    speak("Okay i'll remember that",1);
                 }
 
                 else if(se.toLowerCase().contains("forget about")){
@@ -620,20 +791,20 @@ public class MainActivity extends AppCompatActivity
                     else{
                         f="Good Night "+name;
                     }
-                    speak(f);
+                    speak(f,1);
                 }
 
                 else if(se.contains("time")) {
                     Calendar d =Calendar.getInstance();
                     SimpleDateFormat frmt = new SimpleDateFormat("hh:mm:ss a");
-                    speak(frmt.format(d.getTime()).toString());
+                    speak(frmt.format(d.getTime()).toString(),1);
                 }
                 else if(parameterString.contains("+")){
                    try{ int a=Integer.parseInt(parameterString.substring(0,parameterString.indexOf('+')).trim());
                     int b=Integer.parseInt(parameterString.substring(parameterString.indexOf('+')+1,parameterString.length()).trim());
                     String ans= String.valueOf(a+b);
-                    speak("The answer is "+ans);}catch (Exception e){
-                       speak("Please Enter A Valid Number");
+                    speak("The answer is "+ans,1);}catch (Exception e){
+                       speak("Please Enter A Valid Number",1);
                    }
                 }
                 else if(se.contains("-")){
@@ -641,29 +812,36 @@ public class MainActivity extends AppCompatActivity
                         int a = Integer.parseInt(se.substring(0, se.indexOf('-')).trim());
                         int b = Integer.parseInt(se.substring(se.indexOf('-') + 1, se.length()).trim());
                         int ans = a - b;
-                        speak("The answer is " + ans);
+                        speak("The answer is " + ans,1);
                     }catch (Exception e){
-                         speak("Please Enter A Valid Number");
+                         speak("Please Enter A Valid Number",1);
                      }
                 }
                 else if(se.contains("*")){
                     try{int a=Integer.parseInt(se.substring(0,se.indexOf("*")).trim());
                     int b=Integer.parseInt(se.substring(se.indexOf("*")+2,se.length()).trim());
                     String ans= String.valueOf(a*b);
-                    speak("The answer is "+ans);}catch (Exception e){
-                        speak("Please Enter A Valid Number");
+                    speak("The answer is "+ans,1);}catch (Exception e){
+                        speak("Please Enter A Valid Number",1);
                     }
                 }
                 else if(se.contains("/")){
                     try{int a=Integer.parseInt(se.substring(0,se.indexOf("/")).trim());
                         int b=Integer.parseInt(se.substring(se.indexOf("/")+2,se.length()).trim());
                         String ans= String.valueOf(a/b);
-                        speak("The answer is "+ans);}catch (Exception e){
-                        speak("Please Enter A Valid Number");
+                        speak("The answer is "+ans,1);}catch (Exception e){
+                        speak("Please Enter A Valid Number",1);
                     }
                 }
                 else if(parameterString.equals("music")){
-                    speak("Sure "+name);
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                1);
+                        return null;
+                    }
+
+                    speak("Sure "+name,1);
                     Cursor c=getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null,null);
                     ArrayList<String> arrayList=new ArrayList<>();
                     if(c!=null){
@@ -680,6 +858,18 @@ public class MainActivity extends AppCompatActivity
                     String namep = se.toLowerCase().substring(se.toLowerCase().indexOf("sms")+4,se.toLowerCase().indexOf("that")).trim();
                     boolean found =false;
                     ContentResolver resolver = getContentResolver();
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_CONTACTS},
+                                1);
+                        return null ;
+                    }
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.SEND_SMS},
+                                1);
+                        return null ;
+                    }
                     Uri uri= ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
                     Cursor c=resolver.query(uri,null,null,null,null);
                     while (c.moveToNext()) {
@@ -687,20 +877,21 @@ public class MainActivity extends AppCompatActivity
                             String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                             SmsManager smsManager = SmsManager.getDefault();
                             smsManager.sendTextMessage(phone,null,se.substring(se.indexOf("that")+4,se.length()),null,null);
-                            speak("Okay " + name);
+                            speak("Okay " + name,1);
                             found=true;
                             break;
                         }
                         if ((c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_ALTERNATIVE))).toLowerCase().contains(namep)) {
                             String phone = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                             SmsManager smsManager = SmsManager.getDefault();
-                            smsManager.sendTextMessage(phone,null,se.substring(se.indexOf("that")+4,se.length()),null,null);speak("Okay " + name);
+                            smsManager.sendTextMessage(phone,null,se.substring(se.indexOf("that")+4,se.length()),null,null);
+                            speak("Okay " + name,1);
                             found=true;
                             break;
                         }
                     }
                     if(!found){
-                        speak("No Contact Found Can U please Specify");
+                        speak("No Contact Found Can U please Specify",1);
                     }
 
                 }
@@ -711,7 +902,7 @@ public class MainActivity extends AppCompatActivity
 
                 else if(se.toLowerCase().equals("stone")||se.toLowerCase().equals("paper")||se.toLowerCase().equals("scissors")){
                     se= play(se);
-                    speak(se);
+                    speak(se,1);
                 }
 
                 else if(se.toLowerCase().contains("alarm")){
@@ -730,18 +921,18 @@ public class MainActivity extends AppCompatActivity
                         intent.putExtra("message","Wake Up "+name);
                         PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                         alarmManager.set(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),pendingIntent);
-                        speak( "Alarm set for "+s+" minutes from now");
+                        speak( "Alarm set for "+s+" minutes from now",1);
                     }
 
                     else{
-                        speak("Can U please Enter?");
+                        speak("Can U please Enter?",1);
                         publishProgress(15);
                     }
 
                 }
                 else if(se.toLowerCase().contains("remind me to")){
                     reminder=se.substring(se.toLowerCase().indexOf("to")+2);
-                    speak("When Do u want me to remind you ?");
+                    speak("When Do u want me to remind you ?",1);
                     publishProgress(10);
                 }
 
@@ -751,14 +942,14 @@ public class MainActivity extends AppCompatActivity
                     ComponentName componentName = new ComponentName(MainActivity.this, Ai.class);
                     pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                             PackageManager.DONT_KILL_APP);
-                    speak("I will be Speaking");
+                    speak("I will be Speaking",1);
                 }
                 else if(se.toLowerCase().contains("silent mode on")) {
                     PackageManager pm  = MainActivity.this.getPackageManager();
                     ComponentName componentName = new ComponentName(MainActivity.this, Ai.class);
                     pm.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                             PackageManager.DONT_KILL_APP);
-                    speak("I will be Silent");
+                    speak("I will be Silent",1);
                 }
                 else if(se.toLowerCase().contains ("game")) {
                    Intent i=new Intent(MainActivity.this,TicTacToe.class);
@@ -766,16 +957,16 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 else{
-                   speak(parameterString);
+                   speak(parameterString,1);
                 }
             }
             else{
-                speak("Kyaaaa ?");
+                speak("Kyaaaa ?",1);
             }
         }
         catch (Exception e){
-            speak("Sorry"+name+" I didnot get that"+" beacause Error: "+e.getMessage());
-            Toast.makeText(MainActivity.this,e.toString(),Toast.LENGTH_LONG).show();
+            //speak("Sorry"+name+" I didnot get that"+" beacause Error: "+e.getMessage(),1);
+           // Toast.makeText(MainActivity.this,e.toString(),Toast.LENGTH_LONG).show();
         }
             return "";
         }
@@ -792,7 +983,7 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialogInterface, int i) {
                         switch (i){
                             case 0:
-                                speak("At What Time ?");
+                                speak("At What Time ?",1);
                                 Calendar c=Calendar.getInstance();
                                 int h=c.get(Calendar.HOUR_OF_DAY);
                                 int m=c.get(Calendar.MINUTE);
@@ -804,7 +995,7 @@ public class MainActivity extends AppCompatActivity
                                         intent.putExtra("minute",i1);
                                         intent.putExtra("message",name+" it's time to "+reminder);
                                         sendBroadcast(intent);
-                                        speak("Okay "+name+" i will remind you");
+                                        speak("Okay "+name+" i will remind you",1);
                                     }
                                 };
                                 TimePickerDialog timePickerDialog=new TimePickerDialog(MainActivity.this,t,h,m,false);
@@ -815,7 +1006,7 @@ public class MainActivity extends AppCompatActivity
                                 DatePickerDialog.OnDateSetListener d=new DatePickerDialog.OnDateSetListener() {
                                     @Override
                                     public void onDateSet(DatePicker datePicker, final int year, final int month, final int date) {
-                                        speak("At What Time ?");
+                                        speak("At What Time ?",1);
                                         Calendar c=Calendar.getInstance();
                                         int h=c.get(Calendar.HOUR_OF_DAY);
                                         int m=c.get(Calendar.MINUTE);
@@ -830,7 +1021,7 @@ public class MainActivity extends AppCompatActivity
                                                 intent.putExtra("month",month);
                                                 intent.putExtra("year",year);
                                                 sendBroadcast(intent);
-                                                speak("Okay "+name+" i will remind you");
+                                                speak("Okay "+name+" i will remind you",1);
                                             }
                                         };
                                         TimePickerDialog timePickerDialog=new TimePickerDialog(MainActivity.this,t,h,m,false);
@@ -886,7 +1077,7 @@ public class MainActivity extends AppCompatActivity
                         intent.putExtra("message","Wake Up "+name);
                         PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),(int)(Math.random()*100),intent,0);
                         alarmManager.set(AlarmManager.RTC_WAKEUP,c1.getTimeInMillis(),pendingIntent);
-                        speak("Alarm set for "+i+" Hours and "+i1+" minutes from now");
+                        speak("Alarm set for "+i+" Hours and "+i1+" minutes from now",1);
                         Toast.makeText(getApplicationContext(),"Alarm set for "+i+" Hours and "+i1+" minutes from now",Toast.LENGTH_LONG).show();
                     }
                 };
@@ -895,11 +1086,12 @@ public class MainActivity extends AppCompatActivity
                 timePickerDialog.show();
             }else if(values[0]==35){
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(MainActivity.this, "Please Give Permissions", Toast.LENGTH_SHORT).show();
-                    Intent x=new Intent();
-                    x.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    x.setData(Uri.fromParts("package",getPackageName(),null));
-                    startActivity(x);
+
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                1);
+                        return ;
+
                 }
                 locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
                     @Override
@@ -919,8 +1111,8 @@ public class MainActivity extends AppCompatActivity
                             buffer.append(a.get(i).getAddressLine(i) + ",");
                         }
                         buffer.append("\n");
-                        speak(name + " Your Location is " + buffer.toString());
-                        t.setText(" Your Location is " + buffer.toString());
+                        speak(name + " Your Location is " + buffer.toString(),1);
+                      //  t.setText(" Your Location is " + buffer.toString());
                     }
 
                     @Override
@@ -949,9 +1141,44 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(String aVoid) {
-            t.setText(se.toUpperCase());
+           // t.setText(se.toUpperCase());
+            adapter.notifyDataSetChanged();
+            listView.setSelection(adapter.getCount() - 1);
             super.onPostExecute(aVoid);
         }
     }
 
+    public boolean isConnected(Context context) {
+
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netinfo = cm.getActiveNetworkInfo();
+
+        if (netinfo != null && netinfo.isConnectedOrConnecting()) {
+            android.net.NetworkInfo wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            android.net.NetworkInfo mobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+            if((mobile != null && mobile.isConnectedOrConnecting()) || (wifi != null && wifi.isConnectedOrConnecting())) {
+                return true;
+            }
+            else
+                return false;
+        } else
+            return false;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==101){
+            s.dismiss();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        sc.unregisterListener(MainActivity.this,sensor);
+        super.onDestroy();
+    }
 }

@@ -3,9 +3,7 @@ package com.nearur.jarvis;
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,8 +11,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -23,28 +19,27 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
-public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, SensorEventListener {
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
+public class LocationFetch extends AppCompatActivity implements SensorEventListener {
     Switch s;
     LocationManager lc;
     NotificationManager nc;
     SensorManager sc;
     Sensor sensor,sensor2;
     TextView t;
-    ProgressDialog pd;
-    SeekBar sk;
+    SweetAlertDialog sweetAlertDialog;
+
+
     int count = 1;
     Vibrator vib;
     StringBuffer buffer =new StringBuffer();
@@ -54,36 +49,24 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
         lc = (LocationManager) getSystemService(LOCATION_SERVICE);
         nc = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         t = (TextView) findViewById(R.id.textViewAddress);
-        sk = (SeekBar) findViewById(R.id.seekBar2);
-        sk.setOnSeekBarChangeListener(this);
         vib=(Vibrator)getSystemService(VIBRATOR_SERVICE);
-        pd = new ProgressDialog(this);
-        pd.setMessage("Fetching LocationFetch...");
+
+        sweetAlertDialog=new SweetAlertDialog(this,SweetAlertDialog.PROGRESS_TYPE);
+        sweetAlertDialog.setContentText("Fetching Location");
+        sweetAlertDialog.setTitleText("Location");
+
         s.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (s.isChecked()) {
                     if (lc.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                         if (ActivityCompat.checkSelfPermission(LocationFetch.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(LocationFetch.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(LocationFetch.this);
-                            builder.setTitle("Need Storage Permission");
-                            builder.setMessage("This app needs storage permission.");
-                            builder.setPositiveButton("Grant", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
                                     ActivityCompat.requestPermissions(LocationFetch.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 7623);
+                                    return;
                                 }
-                            });
-                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            });
-                            builder.show();
-                        }else {
-                        pd.show();
+
+                        else {
+                        sweetAlertDialog.show();
                         lc.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10, 5, new LocationListener() {
                             @Override
                             public void onLocationChanged(android.location.Location location) {
@@ -99,8 +82,8 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
 
                                 double lat = location.getLatitude();
                                 double lon = location.getLongitude();
-                                buffer.append(lat+","+lon);
-                                Geocoder gc = new Geocoder(LocationFetch.this);
+
+                                /*Geocoder gc = new Geocoder(LocationFetch.this);
                                 try {
                                     List<Address> a = gc.getFromLocation(lat, lon, 5);
                                     for (Address z : a) {
@@ -108,10 +91,10 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
                                             buffer.append(z.getAddressLine(i) + ",");
                                         }
                                         buffer.append("\n");
-                                    }
-                                    String s = buffer.toString();
+                                    }*/
+                                    String s = "Latitude : "+lat+"\nLongitude : "+lon;
                                     t.setText(s);
-                                    pd.dismiss();
+                                    sweetAlertDialog.dismiss();
                                     if (s.contains("3020") && s.contains("Ganesh Nagar")) {
                                         NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationFetch.this);
                                         builder.setContentText("Home Sweet Home");
@@ -142,10 +125,10 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
                                         nc.notify(count++, n);
                                     }
 
-                                } catch (IOException e) {
+                                }/* catch (IOException e) {
                                     e.printStackTrace();
-                                }
-                            }
+                                }*/
+
 
                             @Override
                             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -190,23 +173,6 @@ public class LocationFetch extends AppCompatActivity implements SeekBar.OnSeekBa
         init();
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (progress == 100) {
-            Intent i = new Intent(this, DistanceCalculation.class);
-            startActivity(i);
-        }
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {

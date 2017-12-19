@@ -7,39 +7,61 @@
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.nearur.jarvis.MainActivity"
-    android:background="@drawable/j7"
+    android:background="@drawable/b3"
+    android:padding="10dp"
     tools:showIn="@layout/app_bar_main">
 
-    <TextView
-        android:id="@+id/txt"
-        android:layout_marginTop="150dp"
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="80"
-        android:layout_gravity="center"
-        android:textAlignment="center"
-        android:textAllCaps="true"
-        android:textStyle="italic|bold"
-        android:textColor="@android:color/white"
-        android:textSize="24dp"
-        />
-
+        android:layout_weight="90"
+        android:layout_marginTop="10dp"
+        android:id="@+id/listtext"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="25"
+        android:layout_weight="10"
         android:layout_gravity="bottom|center"
         android:backgroundTint="@android:color/transparent"
         android:src="@drawable/j5"
          />
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="20"
-        />
+        android:layout_weight="9"
+        android:orientation="horizontal">
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="60"
+            android:layout_gravity="center"
+            android:textColor="@android:color/white"
+            android:id="@+id/editTextquery"
+            android:hint="How Can i help U ?"
+            android:textColorHint="@android:color/darker_gray"
+            android:background="@drawable/edittextnn"
+            />
+
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/gif"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="10"
+            android:layout_gravity="center"
+            android:layout_marginLeft="5dp"
+            android:backgroundTint="@android:color/transparent"
+            android:src="@drawable/j5"
+            />
+
+
+    </LinearLayout>
+
 
 
 </LinearLayout>
